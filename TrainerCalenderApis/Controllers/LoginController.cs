@@ -35,11 +35,11 @@ namespace TrainerCalenderApis.Controllers
 
         // POST api/<LoginController>
         [HttpPost]
-        public ActionResult<string> Post(UserDto user)
+        public ActionResult<string> Post(string email,string password)
         {
-            var dbuser = _dataContext.Users.FirstOrDefault(x=> x.Email==user.email);
+            var dbuser = _dataContext.Users.FirstOrDefault(x=> x.Email==email);
 
-            if (user.password == dbuser.Password)
+            if (password == dbuser.Password)
             {
                 var issuer = _configuration["Jwt:Issuer"];
                 var audience = _configuration["Jwt:Audience"];
@@ -50,8 +50,8 @@ namespace TrainerCalenderApis.Controllers
                     Subject = new ClaimsIdentity(new[]
                     {
                 new Claim("Id", Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, user.email),
-                new Claim(JwtRegisteredClaimNames.Email, user.email),
+                new Claim(JwtRegisteredClaimNames.Sub,email),
+                new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(JwtRegisteredClaimNames.Jti,
                 Guid.NewGuid().ToString())
              }),

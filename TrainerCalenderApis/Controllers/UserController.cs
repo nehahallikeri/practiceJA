@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TrainerCalenderApis.Data;
+using TrainerCalenderApis.Interfaces;
 
 namespace TrainerCalenderApis.Controllers
 {
@@ -8,26 +9,38 @@ namespace TrainerCalenderApis.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly DataContext _context;
-
-        public UserController(DataContext context)
+        private readonly IUserRepository _userRepository;
+        public UserController(IUserRepository userRepository)
         {
-            _context = context;
+            _userRepository = userRepository;
         }
+
         [HttpGet]
-        public async Task<IActionResult> Get(int userId)
+        public async Task<IActionResult> Get()
         {
-            var list=await _context.Users
-                .Where(c=> c.ID == userId)
-                .ToListAsync();
+            var list = _userRepository.GetUsers();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             return Ok(list);
         }
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] User user)
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUser(int userId)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return await Get(user.ID);
+            if (!_userRepository.UserExists(userId))
+            {
+                return NotFound();
+            };
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var user =_userRepository.GetUser(userId);
+            return Ok(user);
         }
+        //[HttpPost]
+        //public async Task<IActionResult> Post([FromBody] User user)
+        //{
+        //    _context.Users.Add(user);
+        //    await _context.SaveChangesAsync();
+        //    return await Get(user.ID);
+        //}
     }
 }
